@@ -2,8 +2,6 @@ from typing import Union, List, Dict
 
 __version__ = '0.0.1'
 
-ConfigValue = Union[bool, str, float, int, 'ConfigArray', 'ConfigDict']
-ConfigArray = List[ConfigValue]
-ConfigDict = Dict[str, ConfigValue]
+from .types import ConfigValue, ConfigDict
 
 from .view import ConfigView
