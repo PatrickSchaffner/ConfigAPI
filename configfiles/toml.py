@@ -1,17 +1,17 @@
 from tomli import loads
 from tomli_w import dumps
 
-from .types import TOMLDict, ConfigDict
+from .types import TOMLDict, TOMLValue, ConfigDict, KeyType
 
 
 class KeyCollisionException(Exception):
     
-    def __init__(self, key:str, /) -> None:
-        self._key = key
+    def __init__(self, key:KeyType, /) -> None:
+        self._key : KeyType = key
         super().__init__(f"Key '{key}' already assigned.")
     
     @property
-    def key(self) -> str:
+    def key(self) -> KeyType:
         return self._key
 
 
@@ -43,10 +43,14 @@ def nested_dict(flat_dict : ConfigDict) -> TOMLDict:
         nodes, leaf = keys[:-1], keys[-1]
         current : TOMLDict = nested
         for i, node in enumerate(nodes):
-            if node not in current: current[node] = {}
-            current = current[node]
-            if not isinstance(current, dict):
-                raise KeyCollisionException('.'.join(nodes[:i+1]))
+            if node not in current:
+                nxt : TOMLDict = {}
+                current[node] = nxt
+            else:
+                nxt : TOMLValue = current[node]
+                if not isinstance(nxt, dict):
+                    raise KeyCollisionException('.'.join(nodes[:i+1]))
+            current = nxt
         if leaf in current:
             raise KeyCollisionException(key)
         current[leaf] = value
