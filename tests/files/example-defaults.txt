@@ -1,0 +1,5 @@
+version = "1.0.0"
+
+[project]
+name = "Example test project"
+authors = ["dev", "tester"]
