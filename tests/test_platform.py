@@ -2,12 +2,12 @@ from pathlib import Path
 
 from unittest.mock import patch
 
-from configfiles.platform import PlatformConfigs
-from configfiles.manager import Configs
-from configfiles.types import ConfigDict
+from configapi.platform import PlatformConfigs
+from configapi.manager import Configs
+from configapi.types import ConfigDict
 
 
-@patch('configfiles.platform.user_config_path')
+@patch('configapi.platform.user_config_path')
 def test_PlatformConfig(user_config_path, fs):
 
     def _usr_path(appname, appauthor, roaming=None, ensure_exists=None):

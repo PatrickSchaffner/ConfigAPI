@@ -3,10 +3,10 @@ from pathlib import Path
 from pytest import raises, mark
 from unittest.mock import MagicMock
 
-from configfiles.types import ConfigDict
-from configfiles.manager import Configs, Scope
-from configfiles.patcher import Patcher
-from configfiles.sources import ConfigSource, NotWritableException
+from configapi.types import ConfigDict
+from configapi.manager import Configs, Scope
+from configapi.patcher import Patcher
+from configapi.sources import ConfigSource, NotWritableException
 
 from . import files
 

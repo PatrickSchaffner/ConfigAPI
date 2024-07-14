@@ -1,8 +1,8 @@
 from pytest import raises, mark, fixture
 from unittest.mock import patch
 
-from configfiles.patcher import Patcher, PatchType, Version
-from configfiles.types import ConfigDict
+from configapi.patcher import Patcher, PatchType, Version
+from configapi.types import ConfigDict
 
 
 def empty_patch() -> PatchType:

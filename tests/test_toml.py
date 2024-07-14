@@ -2,7 +2,7 @@ from typing import Callable, Any, List
 
 from pytest import mark, raises, param
 
-from configfiles.toml import (
+from configapi.toml import (
     parse_toml,
     parse_configs,
     format_toml,

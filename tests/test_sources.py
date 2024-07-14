@@ -3,13 +3,13 @@ from pathlib import Path
 from pytest import fixture, mark, raises, param
 from unittest.mock import patch, MagicMock
 
-from configfiles.sources import (
+from configapi.sources import (
     ConfigSource,
     FileConfigSource,
     PackageResourceConfigSource,
     NotWritableException,
 )
-from configfiles.types import ConfigDict
+from configapi.types import ConfigDict
 
 from . import files
 
@@ -18,7 +18,7 @@ from . import files
     param('', {}, id='empty'),
     param('var = {x0 = true, y1 = "test"}', {'var.x0': True, 'var.y1': 'test'}, id='nested'),
 ])
-@patch('configfiles.sources.format_configs')
+@patch('configapi.sources.format_configs')
 def test_ConfigSource(formatter, toml: str, configs: ConfigDict) -> None:
     with patch.multiple(ConfigSource, __abstractmethods__=set(),
                         read_only=False,
@@ -120,7 +120,7 @@ def test_PackageResourceConfigSource_write_toml() -> None:
     ('utf8', True),
     ('ascii', False),
 ])
-@patch('configfiles.sources.get_data')
+@patch('configapi.sources.get_data')
 def test_PackageResourceConfigSource_encoding(get_data, is_default, encoding) -> None:
     testcontents = 'repo.version = 0'
     testfile = 'test-configs.toml'
