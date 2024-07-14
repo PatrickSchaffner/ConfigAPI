@@ -1,4 +1,3 @@
--r requirements-prod.txt
 pytest
 pytest-cov
 pyfakefs
