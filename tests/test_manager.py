@@ -97,7 +97,7 @@ def test_Configs(fs):
     fs.create_file(cfg_proj, contents='version="0.8.5"\nproject.author = "me"')
 
     configs : Configs = Configs({
-        'default': (files, 'example-defaults.txt'),
+        'default': (files, 'example-defaults.toml'),
         'project': cfg_proj,
     }, target_version='1.0.0')
 
