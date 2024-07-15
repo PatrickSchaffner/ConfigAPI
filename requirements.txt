@@ -1,3 +1,0 @@
-tomli
-tomli_w
-packaging

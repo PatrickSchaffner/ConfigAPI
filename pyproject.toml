@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "configapi"
+requires-python = ">=3.8"
+dependencies = [
+    "tomli",
+    "tomli_w",
+    "packaging",
+    "platformdirs",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pyfakefs",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["configapi*"]  # alternatively: `exclude = ["additional*"]`
+namespaces = false
+
+[tool.pytest.ini_options]
+addopts = "--cov=configapi --cov-report html:coverage"
+testpaths = ["tests"]
+
+[tool.setuptools.dynamic]
+version = {attr = "configapi.__version__"}
