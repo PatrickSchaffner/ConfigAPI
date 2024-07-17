@@ -1,7 +1,4 @@
 __pycache__
 /.venv
 .vscode
-/build
-/.coverage
-*.egg-info
-/dist
+/*.whl

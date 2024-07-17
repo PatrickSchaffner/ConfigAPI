@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -13,21 +13,24 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[tool.setuptools.dynamic]
+version = {attr = "configapi.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["configapi"]
+namespaces = false
+
 [project.optional-dependencies]
-test = [
+tests = [
     "pytest",
     "pytest-cov",
     "pyfakefs",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["configapi*"]  # alternatively: `exclude = ["additional*"]`
-namespaces = false
-
 [tool.pytest.ini_options]
 addopts = "--cov=configapi --cov-report html:coverage"
 testpaths = ["tests"]
 
-[tool.setuptools.dynamic]
-version = {attr = "configapi.__version__"}
+# [tool.distutils.bdist_wheel]
+# universal = true
