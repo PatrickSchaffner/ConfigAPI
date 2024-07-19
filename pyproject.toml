@@ -25,6 +25,7 @@ namespaces = false
 test = [
     "pytest",
     "pytest-cov",
+    "flake8",
     "pyfakefs",
 ]
 
