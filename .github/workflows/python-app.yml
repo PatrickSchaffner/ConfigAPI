@@ -1,10 +1,10 @@
-name: Build python and publish to PyPI
+name: Build python package and publish to PyPI
 
 on: push
 
 jobs:
   build:
-    name: Build and test distribution
+    name: Build and test package
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -103,7 +103,7 @@ jobs:
         --repo '${{ github.repository }}'
 
   publish-to-testpypi:
-    name: Publish development release to TestPyPI
+    name: Publish on TestPyPI
     needs:
     - build
     runs-on: ubuntu-latest

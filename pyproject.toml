@@ -11,6 +11,11 @@ dependencies = [
     "packaging",
     "platformdirs",
 ]
+optional-dependencies.test = [
+    "pytest",
+    "pytest-cov",
+    "pyfakefs",
+]
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
@@ -21,17 +26,6 @@ where = ["."]
 include = ["configapi"]
 namespaces = false
 
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-    "flake8",
-    "pyfakefs",
-]
-
 [tool.pytest.ini_options]
 addopts = "--cov=configapi --junitxml=junit.xml --cov-report=xml --cov-report=html"
 testpaths = ["tests"]
-
-# [tool.distutils.bdist_wheel]
-# universal = true
