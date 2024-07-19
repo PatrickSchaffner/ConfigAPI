@@ -8,4 +8,5 @@ dist
 /.coverage
 /coverage
 /junit.xml
+coverage.xml
 

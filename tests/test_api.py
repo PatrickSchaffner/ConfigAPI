@@ -4,7 +4,7 @@ from pytest import raises, mark
 from unittest.mock import MagicMock
 
 from configapi.types import ConfigDict
-from configapi.manager import Configs, Scope
+from configapi.api import Configs, Scope
 from configapi.patcher import Patcher
 from configapi.sources import ConfigSource, NotWritableException
 

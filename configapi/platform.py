@@ -5,7 +5,7 @@ from typing import Tuple, Union
 
 from platformdirs import user_config_path
 
-from .manager import Configs
+from .api import Configs
 
 
 class PlatformConfigs(Configs):

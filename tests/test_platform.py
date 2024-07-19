@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from configapi.platform import PlatformConfigs
-from configapi.manager import Configs
+from configapi.api import Configs
 from configapi.types import ConfigDict
 
 
