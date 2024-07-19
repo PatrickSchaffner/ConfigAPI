@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    name: Build distribution
+    name: Build and test distribution
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
         path: dist/
 
   publish-to-pypi:
-    name: Publish to PyPI
+    name: Publish release on PyPI
     if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs:
     - build
@@ -62,9 +62,7 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
 
   github-release:
-    name: >-
-      Sign the Python 🐍 distribution 📦 with Sigstore
-      and upload them to GitHub Release
+    name: Publish release on GitHub
     needs:
     - publish-to-pypi
     runs-on: ubuntu-latest
@@ -74,7 +72,7 @@ jobs:
       id-token: write  # IMPORTANT: mandatory for sigstore
 
     steps:
-    - name: Download all the dists
+    - name: Download distribution packages
       uses: actions/download-artifact@v3
       with:
         name: python-package-distributions
@@ -85,7 +83,7 @@ jobs:
         inputs: >-
           ./dist/*.tar.gz
           ./dist/*.whl
-    - name: Create GitHub Release
+    - name: Create GitHub release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: >-
@@ -93,7 +91,7 @@ jobs:
         '${{ github.ref_name }}'
         --repo '${{ github.repository }}'
         --notes ""
-    - name: Upload artifact signatures to GitHub Release
+    - name: Upload artifact signatures
       env:
         GITHUB_TOKEN: ${{ github.token }}
       # Upload to GitHub Release using the `gh` CLI.
@@ -105,7 +103,7 @@ jobs:
         --repo '${{ github.repository }}'
 
   publish-to-testpypi:
-    name: Publish to TestPyPI
+    name: Publish development release to TestPyPI
     needs:
     - build
     runs-on: ubuntu-latest
