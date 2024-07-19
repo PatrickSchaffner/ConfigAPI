@@ -22,7 +22,7 @@ include = ["configapi"]
 namespaces = false
 
 [project.optional-dependencies]
-tests = [
+test = [
     "pytest",
     "pytest-cov",
     "pyfakefs",
