@@ -30,7 +30,7 @@ test = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=configapi --cov-report html:coverage"
+addopts = "--cov=configapi --junitxml=junit/test-results.xml --cov-report=xml --cov-report=html"
 testpaths = ["tests"]
 
 # [tool.distutils.bdist_wheel]
