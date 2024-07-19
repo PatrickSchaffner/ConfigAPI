@@ -4,6 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "configapi"
+authors = [
+  {name = "Patrick Schaffner", email = "patrick.schaffner@protonmail.ch"},
+]
+maintainers = [
+  {name = "Patrick Schaffner", email = "patrick.schaffner@protonmail.ch"},
+]
+description = "A dict-style API for TOML-based config files."
+readme = "README.md"
+license = {text = "MIT License"}
+keywords = ["configs", "platformdirs", "toml", "dict"]
 requires-python = ">=3.8"
 dependencies = [
     "tomli",
