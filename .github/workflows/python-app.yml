@@ -32,6 +32,12 @@ jobs:
         path: junit.xml
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+      if: ${{ always() }}
     - name: Build a binary wheel and a source tarball
       run: python -m build --sdist --wheel --outdir dist/
     - name: Store the distribution packages
@@ -51,7 +57,6 @@ jobs:
       url: https://pypi.org/p/configapi  # Replace <package-name> with your PyPI project name
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
-
     steps:
     - name: Download distribution packages
       uses: actions/download-artifact@v3
@@ -66,11 +71,9 @@ jobs:
     needs:
     - publish-to-pypi
     runs-on: ubuntu-latest
-
     permissions:
       contents: write  # IMPORTANT: mandatory for making GitHub Releases
       id-token: write  # IMPORTANT: mandatory for sigstore
-
     steps:
     - name: Download distribution packages
       uses: actions/download-artifact@v3
@@ -108,14 +111,11 @@ jobs:
     needs:
     - build
     runs-on: ubuntu-latest
-
     environment:
       name: testpypi
       url: https://test.pypi.org/p/configapi
-
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
-
     steps:
     - name: Download distribution packages
       uses: actions/download-artifact@v3
