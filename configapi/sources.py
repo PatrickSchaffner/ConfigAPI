@@ -48,6 +48,10 @@ class FileConfigSource(ConfigSource):
     def read_only(self) -> bool:
         return self._read_only
     
+    @property
+    def file(self) -> Path:
+        return self._file
+    
     def read_toml(self) -> str:
         return self._file.read_text() if self._file.exists() else ''
     
