@@ -14,64 +14,80 @@ from configapi.types import ConfigDict
 from . import files
 
 
-@mark.parametrize('toml, configs', [
-    param('', {}, id='empty'),
-    param('var = {x0 = true, y1 = "test"}', {'var.x0': True, 'var.y1': 'test'}, id='nested'),
-])
-@patch('configapi.sources.format_configs')
-def test_ConfigSource(formatter, toml: str, configs: ConfigDict) -> None:
+@fixture(scope='function')
+def mock_config_source(request):
+    toml, read_only = request.param
     with patch.multiple(ConfigSource, __abstractmethods__=set(),
-                        read_only=False,
+                        read_only=read_only,
                         read_toml=MagicMock(return_value=toml),
                         write_toml=MagicMock(),
                         ):
-        formatter.return_value = toml
         src = ConfigSource()
-        src.read_toml.return_value = toml
-        
-        src.write_dict(configs)
-        formatter.assert_called_once_with(configs)
-        src.write_toml.assert_called_once_with(toml)
+        yield src
 
-        assert src.read_dict() == configs
-        src.read_toml.assert_called_once_with()
-
-
-def test_ConfigSource_read_only() -> None:
-    with patch.multiple(ConfigSource, __abstractmethods__=set(),
-                        read_only=True,
-                        write_toml=MagicMock(),
-                        ):
-        src = ConfigSource()
-
-        with raises(NotWritableException) as exc_info:
-            src.write_dict({})
-        assert type(exc_info.value) == NotWritableException
-        src.write_toml.assert_not_called()
+config_source_parametrize = mark.parametrize('mock_config_source, configs', [
+    param(('', False), {}, id='empty'),
+    param(('var = {x0 = true, y1 = "test"}', False), {'var.x0': True, 'var.y1': 'test'}, id='nested'),
+    param(('a.b = [{c = {d = true}}]', False), {'a.b': [{'c': {'d': True}}]}, id='dict_in_array'),
+], indirect=['mock_config_source'])
 
 
-@mark.parametrize('configs', [
-    param({}, id='empty'),
-    param({'var.x0': True, 'var.y1': 'test'}, id='nested'),
-    param({'a.b': [{'c': {'d': True}}]}, id='dict_in_array'),
+@config_source_parametrize
+def test_ConfigSource_read_dict(mock_config_source, configs):
+    src = mock_config_source
+    assert src.read_dict() == configs
+    src.read_toml.assert_called_once_with()
+
+
+@config_source_parametrize
+@patch('configapi.sources.format_configs')
+def test_ConfigSource_write_dict(format_configs, mock_config_source, configs):
+    src = mock_config_source
+    toml = src.read_toml.return_value
+    format_configs.return_value = toml
+    src.write_dict(configs)
+    format_configs.assert_called_once_with(configs)
+    src.write_toml.assert_called_once_with(toml)
+
+
+@mark.parametrize('mock_config_source', [('', True)], indirect=True)
+def test_ConfigSource_read_only(mock_config_source) -> None:
+    src = mock_config_source
+    with raises(NotWritableException) as exc_info:
+        src.write_dict({})
+    assert type(exc_info.value) == NotWritableException
+    src.write_toml.assert_not_called()
+
+
+@config_source_parametrize
+def test_ConfigSource_formatter(mock_config_source, configs: ConfigDict):
+    src = mock_config_source
+    src.write_dict(configs)
+    src.write_toml.assert_called_once()
+    # return the formatted TOML file contents (output from format_configs) from read_toml()
+    src.read_toml.return_value = src.write_toml.call_args_list[0][0][0] # first call, args, first arg
+    assert src.read_dict() == configs
+    src.read_toml.assert_called_once()
+
+
+@mark.parametrize('filename', [
+    '.test.toml',
+    'C:/Users/admin/cfg.toml',
+    '/unix/path.toml',
+    './local.toml',
+    '~/.user-cfg.toml',
 ])
-def test_ConfigSource_formatter(configs: ConfigDict) -> None:
-    with patch.multiple(ConfigSource, __abstractmethods__=set(),
-                        read_only=False,
-                        write_toml=MagicMock(),
-                        read_toml=MagicMock(),
-                        ):
-        src = ConfigSource()
-        src.write_dict(configs)
-        src.read_toml.return_value = src.write_toml.call_args_list[0][0][0] # first call, args, first arg
-        assert src.read_dict() == configs
+def test_FileConfigSource_file(filename):
+    path = Path(filename)
+    assert FileConfigSource(filename).file == path
+    assert FileConfigSource(path).file == path
 
 
 @mark.parametrize('read_only', [
     param(False, id='writable'),
     param(True, id='readonly'),
 ])
-def test_FileConfigSource_read_only(read_only) -> None:
+def test_FileConfigSource_read_only(read_only):
     src = FileConfigSource('test.toml', read_only=read_only)
     assert src.read_only == read_only
 

@@ -150,3 +150,10 @@ def test_key_collisions(funcs : List[Callable[[ConfigDict], Any]], config_dict :
             func(config_dict)
         assert type(exc_info.value) == KeyCollisionException
         assert exc_info.value.key == collision_key
+
+
+def test_KeyCollisionException():
+    exc = KeyCollisionException('this.key')
+    assert isinstance(exc, Exception)
+    assert exc.key == 'this.key'
+    assert str(exc) == "Key 'this.key' already assigned."

@@ -38,9 +38,9 @@ jobs:
         files: coverage.xml
         token: ${{ secrets.CODECOV_TOKEN }}
       if: ${{ always() }}
-    - name: Build a binary wheel and a source tarball
+    - name: Build wheel and tarball
       run: python -m build --sdist --wheel --outdir dist/
-    - name: Store the distribution packages
+    - name: Store distribution packages
       uses: actions/upload-artifact@v3
       with:
         name: python-package-distributions
