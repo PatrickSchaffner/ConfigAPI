@@ -25,22 +25,22 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run tests
       run:  pytest
-    - name: Upload pytest results
+    - name: Store test results
       uses: actions/upload-artifact@v4
       with:
         name: pytest-results
-        path: |
-          junit.xml
-          coverage.xml
-          htmlcov
-      # Use always() to always run this step to publish test results when there are test failures
+        path: junit.xml
       if: ${{ always() }}
+    - name: Store coverage results
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-results
+        path: htmlcov
     - name: Upload coverage to codecov
       uses: codecov/codecov-action@v4
       with:
         files: coverage.xml
         token: ${{ secrets.CODECOV_TOKEN }}
-      if: ${{ always() }}
     - name: Build wheel and tarball
       run: python -m build --sdist --wheel --outdir dist/
     - name: Store distribution packages
@@ -61,7 +61,7 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-    - name: Download distribution packages
+    - name: Get distribution packages
       uses: actions/download-artifact@v3
       with:
         name: python-package-distributions
@@ -78,7 +78,7 @@ jobs:
       contents: write  # IMPORTANT: mandatory for making GitHub Releases
       id-token: write  # IMPORTANT: mandatory for sigstore
     steps:
-    - name: Download distribution packages
+    - name: Get distribution packages
       uses: actions/download-artifact@v3
       with:
         name: python-package-distributions
