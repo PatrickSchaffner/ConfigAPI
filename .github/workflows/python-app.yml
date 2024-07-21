@@ -25,14 +25,14 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run tests
       run:  pytest
-    - name: Upload pytest test results
+    - name: Upload pytest results
       uses: actions/upload-artifact@v4
       with:
         name: pytest-results
-        path: junit.xml
+        path: junit.xml, coverage.xml, htmlcov
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
-    - name: Upload coverage report
+    - name: Upload coverage to codecov
       uses: codecov/codecov-action@v4
       with:
         files: coverage.xml
