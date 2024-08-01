@@ -35,9 +35,17 @@ class Scope(object):
     def writable(self) -> bool:
         return not self._source.read_only
     
+    @property
+    def autosave_updates(self) -> bool:
+        return self._autosave_updates
+    
+    @property
+    def source(self) -> ConfigSource:
+        return self._source
+    
     def load(self) -> None:
         (self._configs, changed) = self._patcher(self._source.read_dict())
-        if changed and self._autosave_updates: self.save()
+        if changed and self.autosave_updates: self.save()
     
     def keys(self) -> KeysView:
         return self._configs.keys()

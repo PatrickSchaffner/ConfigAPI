@@ -34,6 +34,8 @@ def test_Scope_load(changed:bool, read_only:bool, autosave_updates:bool, write_e
 
     scope : Scope = Scope(source, patcher, autosave_updates=autosave_updates)
     assert not scope.writable == read_only
+    assert scope.autosave_updates == autosave_updates
+    assert scope.source == source
 
     if read_only and changed and autosave_updates:
         with raises(NotWritableException) as exc_info:
