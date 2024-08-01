@@ -118,8 +118,8 @@ def test_PackageResourceConfigSource_read_toml() -> None:
     testcontent = 'package.resource = true'
 
     src = PackageResourceConfigSource(files, testfile)
-    assert src.module == files.__name__
-    assert src.resource == testfile
+    assert src.resource == (files.__name__, testfile)
+    assert src.encoding == 'utf8'
 
     assert src.read_toml() == testcontent
 
@@ -149,6 +149,7 @@ def test_PackageResourceConfigSource_encoding(get_data, is_default, encoding) ->
     enc_kwarg = {'encoding': encoding} if not is_default else {}
     src = PackageResourceConfigSource(files, testfile, **enc_kwarg)
     assert src.read_toml() == testcontents
+    assert src.encoding == encoding
 
     get_data.assert_called_once_with('tests.files', testfile)
     decode.assert_called_once_with(encoding)

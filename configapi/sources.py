@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 from types import ModuleType
 from pathlib import Path
 from pkgutil import get_data
-from typing import Union
+from typing import Union, Tuple
 
 from .types import ConfigDict
 from .toml import parse_configs, format_configs
@@ -62,26 +62,26 @@ class FileConfigSource(ConfigSource):
 class PackageResourceConfigSource(ConfigSource):
     __slots__ = ('_resource', '_encoding')
     
-    def __init__(self, module: Union[str, ModuleType], resource: str, encoding='utf8'):
+    def __init__(self, module: Union[str, ModuleType], resource: str, encoding:str='utf8'):
         if isinstance(module, ModuleType):
             module = module.__name__
-        self._resource = (module, resource)
-        self._encoding = encoding
+        self._resource : Tuple[str,str] = (module, resource)
+        self._encoding : str = encoding
     
     @property
     def read_only(self) -> bool:
         return True
     
     @property
-    def module(self) -> str:
-        return self._resource[0]
+    def resource(self) -> Tuple[str,str]:
+        return self._resource
     
     @property
-    def resource(self) -> str:
-        return self._resource[1]
+    def encoding(self) -> str:
+        return self._encoding
     
     def read_toml(self) -> str:
-        return get_data(*self._resource).decode(self._encoding)
+        return get_data(*self.resource).decode(self.encoding)
     
     def write_toml(self, _: str) -> None:
         raise NotWritableException('Cannot write to package resources.')
