@@ -118,6 +118,9 @@ def test_PackageResourceConfigSource_read_toml() -> None:
     testcontent = 'package.resource = true'
 
     src = PackageResourceConfigSource(files, testfile)
+    assert src.module == files.__name__
+    assert src.resource == testfile
+
     assert src.read_toml() == testcontent
 
     src = PackageResourceConfigSource('tests.files', testfile)

@@ -72,6 +72,14 @@ class PackageResourceConfigSource(ConfigSource):
     def read_only(self) -> bool:
         return True
     
+    @property
+    def module(self) -> str:
+        return self._resource[0]
+    
+    @property
+    def resource(self) -> str:
+        return self._resource[1]
+    
     def read_toml(self) -> str:
         return get_data(*self._resource).decode(self._encoding)
     
