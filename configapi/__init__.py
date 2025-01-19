@@ -1,5 +1,5 @@
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 from .types import ConfigValue, ConfigDict
 from .sources import FileConfigSource, PackageResourceConfigSource
-from .api import Configs
+from .configs import Configs
