@@ -9,6 +9,12 @@ def empty_patch() -> PatchType:
     return lambda cfg: cfg
 
 
+def test_Patcher_call():
+    p = Patcher()
+    configs = {'key': 'value'}
+    assert p(configs) == p.update(configs)
+
+
 def test_Patcher_target_version_auto():
     p = Patcher()
     p.register(version='1.0.12', patch=empty_patch())
@@ -29,10 +35,7 @@ def test_Patcher_register():
     
     patcher = Patcher()
     for (v, p) in mocks.items():
-        if Version(v) > Version('1.5.0'):
-            patcher.register(version=v, patch=p)
-        else:
-            patcher[v] = p
+        patcher.register(version=v, patch=p)
     
     n_patches = len(list(iter(patcher)))
     with raises(ValueError) as exc_info:
@@ -77,12 +80,3 @@ def test_Patcher_update():
     assert cfg == {'version': '2.0.0', 'patched.count': 1, 'patched.by': 'two'}
 
 
-def mock_patch(**kwargs) -> PatchType:
-    def _patch(configs: ConfigDict) -> ConfigDict:
-        for (key, value) in kwargs.items():
-            if value is None:
-                if key in configs: del configs[key]
-            else:
-                configs[key] = value
-        return configs
-    return _patch
