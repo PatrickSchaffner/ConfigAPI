@@ -19,7 +19,6 @@ dependencies = [
     "tomli",
     "tomli_w",
     "packaging",
-    "platformdirs",
 ]
 optional-dependencies.test = [
     "pytest",

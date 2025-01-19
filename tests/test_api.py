@@ -32,7 +32,7 @@ def test_Scope_load(changed: bool, read_only: bool, autosave_updates: bool, writ
     source.read_dict.return_value = cfgs_orig
     source.read_only = read_only
 
-    scope: Scope = Scope('test', source, patcher, autosave_updates=autosave_updates)
+    scope: Scope = Scope( source, patcher, autosave_updates=autosave_updates)
     assert not scope.writable == read_only
     assert scope.autosave_updates == autosave_updates
     assert scope.source == source
@@ -59,7 +59,7 @@ def test_Scope_save(fs):
     name = "test_Scope"
     ''')
 
-    scope: Scope = Scope('test', cfg_file)
+    scope: Scope = Scope(cfg_file)
     scope.load()
     scope['version'] = 0
     scope.save()
@@ -76,7 +76,7 @@ def test_Scope_dict(fs):
     name = "test_Scope"
     ''')
 
-    scope: Scope = Scope('test', cfg_file)
+    scope: Scope = Scope(cfg_file)
     scope.load()
     
     assert 'test_Scope' not in scope

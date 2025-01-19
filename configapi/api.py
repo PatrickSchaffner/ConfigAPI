@@ -15,9 +15,9 @@ SourceType = Union[ConfigSource, str, Path, Tuple[ModuleType, str], Tuple[str, s
 
 
 class Scope(object):
-    __slots__ = ('_name', '_source', '_patcher', '_autosave_updates', '_configs')
+    __slots__ = ('_source', '_patcher', '_autosave_updates', '_configs')
     
-    def __init__(self, /, name: str, source: SourceType, patcher: Patcher = None, *,
+    def __init__(self, /, source: SourceType, patcher: Patcher = None, *,
                  autosave_updates: bool = None,
                  ) -> None:
         if isinstance(source, (str, Path)):
@@ -26,15 +26,10 @@ class Scope(object):
             source = PackageResourceConfigSource(*source)
         elif not isinstance(source, ConfigSource):
             raise ValueError(f"Argument 'source' of type '{type(source)}' is not a ConfigSource.")
-        self._name = name
         self._source: ConfigSource = source
         self._patcher: PatcherType = patcher if patcher is not None else lambda cfg : (cfg, False)
         self._autosave_updates: bool = autosave_updates if autosave_updates is not None else self.writable
         self._configs: ConfigDict = None
-
-    @property
-    def name(self):
-        return self._name
     
     @property
     def writable(self) -> bool:
@@ -81,7 +76,7 @@ class Scope(object):
     
     def _check_writable(self) -> None:
         if not self.writable:
-            raise NotWritableException(f"Scope '{self.name}' is not writable.")
+            raise NotWritableException("Scope is not writable.")
     
 
 class Configs(object):
@@ -96,7 +91,7 @@ class Configs(object):
                 self.add_source(name, source)
     
     def add_source(self, /, name: str, source: SourceType, **kwargs) -> Scope:
-        scope = Scope(name, source, self._patcher, **kwargs)
+        scope = Scope(source, self._patcher, **kwargs)
         self._scopes[name] = scope
         self._priority.append(name)
         return scope
@@ -139,12 +134,21 @@ class Configs(object):
             if key in scope:
                 return scope
         raise KeyError(key)
+
+    def _lookup(self, key: KeyType) -> Tuple[ConfigValue, str]:
+        for source in reversed(self._priority):
+            scope = self._scopes[source]
+            if key in scope:
+                return scope[key], source
+        raise KeyError(key)
     
     def __getitem__(self, key: KeyType) -> ConfigValue:
-        return self._lookup_scope(key)[key]
+        value, _ = self._lookup(key)
+        return value
     
     def __contains__(self, key: KeyType) -> bool:
         return any(key in scope for scope in self._scopes.values())
     
     def source(self, key: KeyType) -> str:
-        return self._lookup_scope(key).name
+        _, source = self._lookup(key)
+        return source
