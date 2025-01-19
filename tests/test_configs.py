@@ -30,3 +30,7 @@ def test_Configs(fs):
     assert configs['project.authors'] == ['me']
     assert configs.source('project.authors') == 'project'
     assert configs.source('project.name') == 'default'
+
+    assert set(configs.keys()) == {'project.authors', 'project.name'}
+    assert list(configs.items(source=True)) == [('project.authors', ['me'], 'project'), ('project.name', 'Example test project', 'default')]
+    assert list(configs.values()) == ['Example test project', ['me']]

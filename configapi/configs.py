@@ -59,13 +59,6 @@ class Configs(object):
     def values(self):
         return (self[key] for key in self.keys())
 
-    def _lookup_scope(self, key: KeyType) -> Scope:
-        for name in reversed(self._priority):
-            scope = self._scopes[name]
-            if key in scope:
-                return scope
-        raise KeyError(key)
-
     def _lookup(self, key: KeyType) -> Tuple[ConfigValue, str]:
         for source in reversed(self._priority):
             scope = self._scopes[source]
