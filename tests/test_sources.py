@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 
 from configapi.sources import (
     ConfigSource,
+    InMemoryConfigSource,
     FileConfigSource,
     PackageResourceConfigSource,
     NotWritableException,
@@ -18,11 +19,10 @@ from . import files
 def mock_config_source(request):
     toml, read_only = request.param
     with patch.multiple(ConfigSource, __abstractmethods__=set(),
-                        read_only=read_only,
                         read_toml=MagicMock(return_value=toml),
                         write_toml=MagicMock(),
                         ):
-        src = ConfigSource()
+        src = ConfigSource(read_only=read_only)
         yield src
 
 config_source_parametrize = mark.parametrize('mock_config_source, configs', [
@@ -70,6 +70,48 @@ def test_ConfigSource_formatter(mock_config_source, configs: ConfigDict):
     src.read_toml.assert_called_once()
 
 
+def test_InMemoryConfigSource():
+    configs = {'a.b': [0, 1], 'a.c': True}
+    src = InMemoryConfigSource(configs=configs)
+    assert src.configs is configs
+
+    configs = {'a.b': [0, 1], 'a.c': False}
+    src.configs = configs
+    assert src.configs is configs
+
+    assert src.read_dict() == configs
+    assert src.read_dict() is not configs
+
+    assert src.read_toml() == '[a]\nb = [\n    0,\n    1,\n]\nc = false\n'
+
+    configs = {'a.b': [1, 0]}
+    src.write_dict(configs)
+    assert src.configs == configs
+    assert src.configs is not configs
+
+    src.write_toml('[a]\nb = 1')
+    assert src.configs == {'a.b': 1}
+
+
+def test_InMemoryConfigSource_read_only():
+    src = InMemoryConfigSource(read_only=True)
+    assert src.configs == {}
+
+    configs = {'a.b': [0, 1], 'a.c': False}
+    src.configs = configs
+    assert src.configs is configs
+
+    with raises(NotWritableException) as exc_info:
+        src.write_dict({})
+    assert type(exc_info.value) == NotWritableException
+    assert src.configs is configs
+
+    with raises(NotWritableException) as exc_info:
+        src.write_toml('')
+    assert type(exc_info.value) == NotWritableException
+    assert src.configs is configs
+
+
 @mark.parametrize('filename', [
     '.test.toml',
     'C:/Users/admin/cfg.toml',
@@ -81,15 +123,6 @@ def test_FileConfigSource_file(filename):
     path = Path(filename)
     assert FileConfigSource(filename).file == path
     assert FileConfigSource(path).file == path
-
-
-@mark.parametrize('read_only', [
-    param(False, id='writable'),
-    param(True, id='readonly'),
-])
-def test_FileConfigSource_read_only(read_only):
-    src = FileConfigSource('test.toml', read_only=read_only)
-    assert src.read_only == read_only
 
 
 def test_FileConfigSource_read_toml(fs) -> None:
