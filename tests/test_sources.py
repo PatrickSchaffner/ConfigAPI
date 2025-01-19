@@ -70,6 +70,18 @@ def test_ConfigSource_formatter(mock_config_source, configs: ConfigDict):
     src.read_toml.assert_called_once()
 
 
+@mark.parametrize('method', [
+    'read_toml',
+    'write_toml',
+])
+def test_ConfigSource_abstract_methods(method):
+    m = getattr(ConfigSource, method)
+    a = [MagicMock() for _ in range(m.__code__.co_argcount)]
+    with raises(NotImplementedError) as exc_info:
+        m(*a)
+    assert type(exc_info.value) == NotImplementedError
+
+
 def test_InMemoryConfigSource():
     configs = {'a.b': [0, 1], 'a.c': True}
     src = InMemoryConfigSource(configs=configs)

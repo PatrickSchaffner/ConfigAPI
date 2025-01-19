@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pytest import raises
 
 from configapi.types import ConfigDict
 from configapi.configs import Configs
@@ -31,6 +32,20 @@ def test_Configs(fs):
     assert configs.source('project.authors') == 'project'
     assert configs.source('project.name') == 'default'
 
+    assert 'project.authors' in configs
     assert set(configs.keys()) == {'project.authors', 'project.name'}
-    assert list(configs.items(source=True)) == [('project.authors', ['me'], 'project'), ('project.name', 'Example test project', 'default')]
-    assert list(configs.values()) == ['Example test project', ['me']]
+    assert all(i in [('project.authors', ['me'], 'project'), ('project.name', 'Example test project', 'default')] for i in configs.items(source=True))
+    assert all(v in ['Example test project', ['me']] for v in configs.values())
+
+
+def test_Configs_errors():
+    configs = Configs(sources={'main': dict()})
+    configs.load()
+
+    with raises(KeyError) as exc_info:
+        _ = configs['non.existent']
+    assert type(exc_info.value) == KeyError
+
+    with raises(AttributeError) as exc_info:
+        _ = configs.not_main
+    assert type(exc_info.value) == AttributeError

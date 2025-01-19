@@ -43,7 +43,7 @@ class Patcher(object):
             current = patch_version
         return configs, current > initial
     
-    def __call__(self, configs:ConfigDict):
+    def __call__(self, configs: ConfigDict):
         return self.update(configs)
 
     def __iter__(self):

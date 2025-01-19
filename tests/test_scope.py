@@ -30,6 +30,12 @@ def test_Scope_init(source, expected_type, expected_autosave):
     assert scope.autosave_updates == expected_autosave
 
 
+def test_Scope_init_errors():
+    with raises(ValueError) as exc_info:
+        _ = Scope(None)
+    assert type(exc_info.value) == ValueError
+
+
 @mark.parametrize('changed, read_only, autosave_updates, write_expected', [
     (False, False, False, False),
     (True, False, False, False),
