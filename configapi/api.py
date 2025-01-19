@@ -137,6 +137,9 @@ class Configs(object):
                 yield (key, value, name) if source else (key, value)
                 processed.add(key)
 
+    def values(self):
+        return (self[key] for key in self.keys())
+
     def _lookup_scope(self, key: KeyType) -> Scope:
         for name in reversed(self._priority):
             scope = self._scopes[name]
