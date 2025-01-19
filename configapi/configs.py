@@ -1,4 +1,4 @@
-from typing import Callable, Tuple, Dict, List, Set
+from typing import Callable, Dict, List, Set
 
 
 from .types import KeyType, ConfigValue
@@ -23,11 +23,14 @@ class Configs(object):
         self._priority.append(name)
         return scope
 
+    def scope(self, name: str) -> Scope:
+        return self._scopes[name]
+
     def __getattr__(self, name: str) -> Scope:
-        if name not in self._scopes:
+        try:
+            return self.scope(name)
+        except KeyError:
             raise AttributeError(name)
-        else:
-            return self._scopes[name]
 
     def patch(self, version: str, /) -> Callable[[PatchType], PatchType]:
         def _decorator(patch: PatchType) -> PatchType:
@@ -41,38 +44,46 @@ class Configs(object):
             scope.load()
 
     def keys(self) -> Set[str]:
-        all_keys: Set[str] = set()
-        for scope in self._scopes.values():
-            all_keys = all_keys.union(set(scope.keys()))
-        return all_keys
+        for key, _ in self.items():
+            yield key
 
-    def items(self, source=False):
+    def items(self, source=False, scope=False):
         processed = set()
         for name in reversed(self._priority):
-            scope = self._scopes[name]
-            for (key, value) in scope.items():
+            s = self._scopes[name]
+            for (key, value) in s.items():
                 if key in processed:
                     continue
-                yield (key, value, name) if source else (key, value)
+                result = [key, value]
+                if source:
+                    result.append(name)
+                if scope:
+                    result.append(s)
+                yield tuple(result)
                 processed.add(key)
 
     def values(self):
-        return (self[key] for key in self.keys())
+        for _, value in self.items():
+            yield value
 
-    def _lookup(self, key: KeyType) -> Tuple[ConfigValue, str]:
-        for source in reversed(self._priority):
-            scope = self._scopes[source]
-            if key in scope:
-                return scope[key], source
+    def get(self, key: KeyType, source=False, scope=False) -> ConfigValue:
+        for src in reversed(self._priority):
+            scp = self._scopes[src]
+            if key in scp:
+                result = [scp[key]]
+                if source:
+                    result.append(src)
+                if scope:
+                    result.append(scp)
+                return tuple(result) if len(result) > 1 else result[0]
         raise KeyError(key)
 
     def __getitem__(self, key: KeyType) -> ConfigValue:
-        value, _ = self._lookup(key)
-        return value
+        return self.get(key)
 
     def __contains__(self, key: KeyType) -> bool:
         return any(key in scope for scope in self._scopes.values())
 
     def source(self, key: KeyType) -> str:
-        _, source = self._lookup(key)
+        _, source = self.get(key, source=True)
         return source

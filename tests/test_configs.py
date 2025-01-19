@@ -17,6 +17,9 @@ def test_Configs(fs):
         'project': cfg_proj,
     }, target_version='1.0.0')
 
+    assert configs.default is configs.scope('default')
+    assert configs.project is configs.scope('project')
+
     @configs.patch('0.9.2')
     def _patch(cfgs: ConfigDict) -> ConfigDict:
         if 'project.author' in cfgs:
@@ -31,10 +34,13 @@ def test_Configs(fs):
     assert configs['project.authors'] == ['me']
     assert configs.source('project.authors') == 'project'
     assert configs.source('project.name') == 'default'
+    assert configs.get('project.authors', source=True, scope=True) == (['me'], 'project', configs.project)
 
     assert 'project.authors' in configs
     assert set(configs.keys()) == {'project.authors', 'project.name'}
-    assert all(i in [('project.authors', ['me'], 'project'), ('project.name', 'Example test project', 'default')] for i in configs.items(source=True))
+    assert all(i in [('project.authors', ['me'], 'project', configs.project),
+                     ('project.name', 'Example test project', 'default', configs.default),
+                     ] for i in configs.items(source=True, scope=True))
     assert all(v in ['Example test project', ['me']] for v in configs.values())
 
 
