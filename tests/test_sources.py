@@ -84,10 +84,9 @@ def test_InMemoryConfigSource():
 
     assert src.read_toml() == '[a]\nb = [\n    0,\n    1,\n]\nc = false\n'
 
-    configs = {'a.b': [1, 0]}
-    src.write_dict(configs)
-    assert src.configs == configs
-    assert src.configs is not configs
+    src.write_dict({'a.b': [1, 0]})
+    assert src.configs == {'a.b': [1, 0]}
+    assert src.configs is configs
 
     src.write_toml('[a]\nb = 1')
     assert src.configs == {'a.b': 1}

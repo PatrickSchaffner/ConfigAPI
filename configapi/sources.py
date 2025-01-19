@@ -43,8 +43,8 @@ class ConfigSource(ABC):
 class InMemoryConfigSource(ConfigSource):
     __slots__ = ('_configs',)
 
-    def __init__(self, configs: ConfigDict = dict(), **kwargs):
-        self._configs = configs
+    def __init__(self, configs: ConfigDict = None, **kwargs):
+        self._configs = configs if configs is not None else dict()
         super(InMemoryConfigSource, self).__init__(**kwargs)
 
     @property
@@ -64,7 +64,8 @@ class InMemoryConfigSource(ConfigSource):
     def write_dict(self, configs_dict: ConfigDict):
         if self.read_only:
             raise NotWritableException(f"{type(self).__name__} is not writeable.")
-        self._configs = deepcopy(configs_dict)
+        self._configs.clear()
+        self._configs.update(deepcopy(configs_dict))
 
     def read_dict(self) -> ConfigDict:
         return deepcopy(self._configs)
