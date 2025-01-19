@@ -5,7 +5,29 @@ from unittest.mock import MagicMock
 
 from configapi.scope import Scope
 from configapi.patcher import Patcher
-from configapi.sources import ConfigSource, NotWritableException
+from configapi.sources import (
+    ConfigSource,
+    FileConfigSource,
+    InMemoryConfigSource,
+    PackageResourceConfigSource,
+    NotWritableException,
+)
+
+from . import files
+
+
+@mark.parametrize('source, expected_type, expected_autosave', [
+    (Path.cwd() / 'config.toml', FileConfigSource, True),
+    ('config.toml', FileConfigSource, True),
+    ((files, 'config.toml'), PackageResourceConfigSource, False),
+    (('pkgname', 'config.toml'), PackageResourceConfigSource, False),
+    ({'a': 'b'}, InMemoryConfigSource, True),
+])
+def test_Scope_init(source, expected_type, expected_autosave):
+    scope = Scope(source)
+    assert isinstance(scope.source, expected_type)
+    assert scope.writable != scope.source.read_only
+    assert scope.autosave_updates == expected_autosave
 
 
 @mark.parametrize('changed, read_only, autosave_updates, write_expected', [

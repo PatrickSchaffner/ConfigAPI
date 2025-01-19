@@ -5,13 +5,14 @@ from pathlib import Path
 from .types import ConfigDict, KeyType, ConfigValue
 from .sources import (
     ConfigSource,
+    InMemoryConfigSource,
     FileConfigSource,
     PackageResourceConfigSource,
     NotWritableException)
 from .patcher import Patcher, PatcherType
 
 
-SourceType = Union[ConfigSource, str, Path, Tuple[ModuleType, str], Tuple[str, str]]
+SourceType = Union[ConfigSource, str, Path, Tuple[ModuleType, str], Tuple[str, str], ConfigDict]
 
 
 class Scope(object):
@@ -24,6 +25,8 @@ class Scope(object):
             source = FileConfigSource(source)
         elif isinstance(source, tuple):
             source = PackageResourceConfigSource(*source)
+        elif isinstance(source, dict):
+            source = InMemoryConfigSource(source)
         elif not isinstance(source, ConfigSource):
             raise ValueError(f"Argument 'source' of type '{type(source)}' is not a ConfigSource.")
         self._source: ConfigSource = source
