@@ -11,14 +11,14 @@ from .sources import (
 from .patcher import Patcher, PatchType, PatcherType
 
 
-SourceType = Union[ConfigSource,str,Path,Tuple[ModuleType,str],Tuple[str,str]]
+SourceType = Union[ConfigSource, str, Path, Tuple[ModuleType, str], Tuple[str, str]]
 
 
 class Scope(object):
-    __slots__ = ('_source', '_patcher', '_autosave_updates', '_configs')
+    __slots__ = ('_name', '_source', '_patcher', '_autosave_updates', '_configs')
     
-    def __init__(self, /, source:SourceType, patcher:Patcher=None, *,
-                 autosave_updates:bool=None,
+    def __init__(self, /, name: str, source: SourceType, patcher: Patcher = None, *,
+                 autosave_updates: bool = None,
                  ) -> None:
         if isinstance(source, (str, Path)):
             source = FileConfigSource(source)
@@ -26,10 +26,15 @@ class Scope(object):
             source = PackageResourceConfigSource(*source)
         elif not isinstance(source, ConfigSource):
             raise ValueError(f"Argument 'source' of type '{type(source)}' is not a ConfigSource.")
-        self._source : ConfigSource = source
-        self._patcher : PatcherType = patcher if patcher is not None else lambda cfg : (cfg, False)
-        self._autosave_updates : bool = autosave_updates if autosave_updates is not None else self.writable
-        self._configs : ConfigDict = None
+        self._name = name
+        self._source: ConfigSource = source
+        self._patcher: PatcherType = patcher if patcher is not None else lambda cfg : (cfg, False)
+        self._autosave_updates: bool = autosave_updates if autosave_updates is not None else self.writable
+        self._configs: ConfigDict = None
+
+    @property
+    def name(self):
+        return self._name
     
     @property
     def writable(self) -> bool:
@@ -76,37 +81,34 @@ class Scope(object):
     
     def _check_writable(self) -> None:
         if not self.writable:
-            raise NotWritableException('Scope is not writable.')
+            raise NotWritableException(f"Scope '{self.name}' is not writable.")
     
 
 class Configs(object):
     __slots__ = ('_patcher', '_scopes', '_priority')
 
-    def __init__(self, /, sources:Dict[str,SourceType]=None, *, target_version:str=None) -> None:
-        self._patcher : Patcher = Patcher(target_version=target_version)
-        self._scopes : Dict[str,Scope] = {}
-        self._priority : List[str] = []
+    def __init__(self, /, sources: Dict[str, SourceType] = None, *, target_version: str = None) -> None:
+        self._patcher: Patcher = Patcher(target_version=target_version)
+        self._scopes: Dict[str, Scope] = {}
+        self._priority: List[str] = []
         if isinstance(sources, dict):
             for (name, source) in sources.items():
-                self.add_scope(name, source)
+                self.add_source(name, source)
     
-    def add_scope(self, /, name:str, source:SourceType, **kwargs) -> Scope:
-        scope = Scope(source, self._patcher, **kwargs)
+    def add_source(self, /, name: str, source: SourceType, **kwargs) -> Scope:
+        scope = Scope(name, source, self._patcher, **kwargs)
         self._scopes[name] = scope
         self._priority.append(name)
         return scope
     
-    def scope(self, name:str) -> Scope:
-        return self._scopes[name]
-    
-    def __getattr__(self, name:str) -> Scope:
+    def __getattr__(self, name: str) -> Scope:
         if name not in self._scopes:
-            raise AttributeError
+            raise AttributeError(name)
         else:
-            return self.scope(name)
+            return self._scopes[name]
 
-    def patch(self, version:str, /) -> Callable[[PatchType], PatchType]:
-        def _decorator(patch:PatchType) -> PatchType:
+    def patch(self, version: str, /) -> Callable[[PatchType], PatchType]:
+        def _decorator(patch: PatchType) -> PatchType:
             self._patcher.register(version=version, patch=patch)
             return patch
         return _decorator
@@ -116,30 +118,33 @@ class Configs(object):
             scope.load()
     
     def keys(self) -> Set[str]:
-        all_keys : Set[str] = set()
+        all_keys: Set[str] = set()
         for scope in self._scopes.values():
             all_keys = all_keys.union(set(scope.keys()))
         return all_keys
     
-    def items(self, origin=False):
-        return iter([(key, self[key], self.origin(key)) if origin else (key, self[key])
-                     for key in self.keys()])
-    
-    def values(self):
-        return iter([self[key] for key in self.keys()])
-    
-    def __getitem__(self, key:KeyType) -> ConfigValue:
+    def items(self, source=False):
+        processed = set()
         for name in reversed(self._priority):
-            scope = self.scope(name)
+            scope = self._scopes[name]
+            for (key, value) in scope.items():
+                if key in processed:
+                    continue
+                yield (key, value, name) if source else (key, value)
+                processed.add(key)
+
+    def _lookup_scope(self, key: KeyType) -> Scope:
+        for name in reversed(self._priority):
+            scope = self._scopes[name]
             if key in scope:
-                return scope[key]
+                return scope
         raise KeyError(key)
     
-    def __contains__(self, key:KeyType) -> bool:
+    def __getitem__(self, key: KeyType) -> ConfigValue:
+        return self._lookup_scope(key)[key]
+    
+    def __contains__(self, key: KeyType) -> bool:
         return any(key in scope for scope in self._scopes.values())
     
-    def origin(self, key:KeyType) -> str:
-        for name in reversed(self._priority):
-            if key in self.scope(name):
-                return name
-        raise KeyError(key)
+    def source(self, key: KeyType) -> str:
+        return self._lookup_scope(key).name

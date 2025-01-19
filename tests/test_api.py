@@ -21,18 +21,18 @@ from . import files
     (False, True,  True,  False),
     (True,  True,  True,  False),
 ])
-def test_Scope_load(changed:bool, read_only:bool, autosave_updates:bool, write_expected:bool):
+def test_Scope_load(changed: bool, read_only: bool, autosave_updates: bool, write_expected: bool):
     cfgs_orig = {'a.b': 'c'}
     cfgs_patched = {'a.c': 'b'} if changed else cfgs_orig
 
-    patcher : Patcher = MagicMock(spec=Patcher)
+    patcher: Patcher = MagicMock(spec=Patcher)
     patcher.return_value = (cfgs_patched, changed)
 
-    source : ConfigSource = MagicMock(spec=ConfigSource)
+    source: ConfigSource = MagicMock(spec=ConfigSource)
     source.read_dict.return_value = cfgs_orig
     source.read_only = read_only
 
-    scope : Scope = Scope(source, patcher, autosave_updates=autosave_updates)
+    scope: Scope = Scope('test', source, patcher, autosave_updates=autosave_updates)
     assert not scope.writable == read_only
     assert scope.autosave_updates == autosave_updates
     assert scope.source == source
@@ -59,7 +59,7 @@ def test_Scope_save(fs):
     name = "test_Scope"
     ''')
 
-    scope : Scope = Scope(cfg_file)
+    scope: Scope = Scope('test', cfg_file)
     scope.load()
     scope['version'] = 0
     scope.save()
@@ -76,7 +76,7 @@ def test_Scope_dict(fs):
     name = "test_Scope"
     ''')
 
-    scope : Scope = Scope(cfg_file)
+    scope: Scope = Scope('test', cfg_file)
     scope.load()
     
     assert 'test_Scope' not in scope
@@ -98,7 +98,7 @@ def test_Configs(fs):
     cfg_proj = Path('project-configs.toml')
     fs.create_file(cfg_proj, contents='version="0.8.5"\nproject.author = "me"')
 
-    configs : Configs = Configs({
+    configs: Configs = Configs({
         'default': (files, 'example-defaults.toml'),
         'project': cfg_proj,
     }, target_version='1.0.0')
@@ -115,5 +115,5 @@ def test_Configs(fs):
     assert configs.project['project.authors'] == ['me']
     assert configs.default['project.authors'] == ['dev', 'tester']
     assert configs['project.authors'] == ['me']
-    assert configs.origin('project.authors') == 'project'
-    assert configs.origin('project.name') == 'default'
+    assert configs.source('project.authors') == 'project'
+    assert configs.source('project.name') == 'default'

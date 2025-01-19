@@ -29,10 +29,7 @@ def test_Patcher_register():
     
     patcher = Patcher()
     for (v, p) in mocks.items():
-        if Version(v) > Version('1.5.0'):
-            patcher.register(version=v, patch=p)
-        else:
-            patcher[v] = p
+        patcher.register(version=v, patch=p)
     
     n_patches = len(list(iter(patcher)))
     with raises(ValueError) as exc_info:
