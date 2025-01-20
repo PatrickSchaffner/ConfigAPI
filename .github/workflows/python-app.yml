@@ -51,7 +51,7 @@ jobs:
 
   publish-to-pypi:
     name: Publish release on PyPI
-    if: github.ref == 'refs/heads/main'  # only publish to PyPI on main
+    if: startsWith(github.ref, 'refs/tags/v')
     needs:
     - build
     runs-on: ubuntu-latest
