@@ -110,7 +110,7 @@ jobs:
 
   publish-to-testpypi:
     name: Publish on TestPyPI
-    if: github.ref == 'refs/tags/test'
+    if: github.ref == 'refs/heads/main'
     needs:
     - build
     runs-on: ubuntu-latest
