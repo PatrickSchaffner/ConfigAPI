@@ -13,7 +13,7 @@ maintainers = [
 description = "A dict-style API for TOML-based config files."
 readme = "README.md"
 license = {text = "MIT License"}
-keywords = ["configs", "platformdirs", "toml", "dict"]
+keywords = ["configs", "toml", "dict"]
 requires-python = ">=3.8"
 dependencies = [
     "tomli",
@@ -26,6 +26,9 @@ optional-dependencies.test = [
     "pyfakefs",
 ]
 dynamic = ["version"]
+
+[project.urls]
+Source = "https://github.com/PatrickSchaffner/ConfigAPI"
 
 [tool.setuptools.dynamic]
 version = {attr = "configapi.__version__"}
